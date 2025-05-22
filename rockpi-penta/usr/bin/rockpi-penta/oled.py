@@ -10,6 +10,7 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 import multiprocessing as mp
+import threading
 
 import misc
 
@@ -85,48 +86,53 @@ def put_disk_info():
     return page
 
 
-def gen_pages():
-    pages = {
-        0: [
+
+def gen_pages(idx):
+
+    if idx == 0:
+        return [
             {'xy': (0, -2), 'text': misc.get_info('up'), 'fill': 255, 'font': font['11']},
             {'xy': (0, 10), 'text': misc.get_cpu_temp(), 'fill': 255, 'font': font['11']},
             {'xy': (0, 21), 'text': misc.get_info('ip'), 'fill': 255, 'font': font['11']},
-        ],
-        1: [
+        ]
+    elif idx == 1:
+        return [
             {'xy': (0, 2), 'text': misc.get_info('cpu'), 'fill': 255, 'font': font['12']},
             {'xy': (0, 18), 'text': misc.get_info('men'), 'fill': 255, 'font': font['12']},
-        ],
-        2: put_disk_info()
-    }
-
-    return pages
-
-
-def slider(lock):
-    with lock:
-        for item in misc.slider_next(gen_pages()):
-            draw.text(**item)
-        disp_show()
-
-def refresh(lock):
-    with lock:
-        for item in misc.slider_refresh(gen_pages()):
-            draw.text(**item)
-        disp_show()
-
-def auto_slider(lock):
-
-    while True:
-        if misc.conf['slider']['auto']:
-            slider(lock)
-        else:
-            refresh(lock)
-        misc.slider_sleep()
+        ]
     else:
-        misc.slider(lock)
+        return put_disk_info()
 
+
+
+idx = -1
+
+def slider():
+    global idx
+    idx += 1
+    idx %= 3
+    for item in gen_pages(idx):
+        draw.text(**item)
+    disp_show()
+
+def refresh():
+    for item in gen_pages(idx):
+        draw.text(**item)
+    disp_show()
+
+def auto_slider(slide_event):
+
+    slide = True
+    while True:
+        if misc.conf['slider']['auto'] or slide:
+            slider()
+        else:
+            refresh()
+        slide_event.clear()
+        slide_event.wait(misc.get_sleep_time())
+        slide = slide_event.is_set()
 
 if __name__ == '__main__':
     # for test
-    lock = mp.Lock()
-    auto_slider(lock)
+    event = threading.Event()
+    auto_slider(event)
