@@ -108,13 +108,22 @@ def slider(lock):
             draw.text(**item)
         disp_show()
 
+def refresh(lock):
+    with lock:
+        for item in misc.slider_refresh(gen_pages()):
+            draw.text(**item)
+        disp_show()
 
 def auto_slider(lock):
-    while misc.conf['slider']['auto']:
-        slider(lock)
+
+    while True:
+        if misc.conf['slider']['auto']:
+            slider(lock)
+        else:
+            refresh(lock)
         misc.slider_sleep()
     else:
-        slider(lock)
+        misc.slider(lock)
 
 
 if __name__ == '__main__':

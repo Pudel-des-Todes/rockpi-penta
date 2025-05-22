@@ -146,9 +146,12 @@ def get_disk_info(cache={}):
 
 
 def slider_next(pages):
+    page = pages[conf['idx'].value % len(pages)]
     conf['idx'].value += 1
-    return pages[conf['idx'].value % len(pages)]
+    return page
 
+def slider_refresh(pages):
+    return pages[conf['idx'].value % len(pages)]
 
 def slider_sleep():
     time.sleep(conf['slider']['time'])
@@ -169,5 +172,5 @@ def get_func(key):
     return conf['key'].get(key, 'none')
 
 
-conf = {'disk': [], 'idx': mp.Value('d', -1), 'run': mp.Value('d', 1)}
+conf = {'disk': [], 'idx': mp.Value('d', 0), 'run': mp.Value('d', 1)}
 conf.update(read_conf())
