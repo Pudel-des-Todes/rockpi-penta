@@ -71,6 +71,12 @@ def read_conf():
         conf['slider']['time'] = cfg.getfloat('slider', 'time')
         conf['oled']['rotate'] = cfg.getboolean('oled', 'rotate')
         conf['oled']['f-temp'] = cfg.getboolean('oled', 'f-temp')
+
+        extra_disks = cfg.get('disk', 'extra', fallback="")
+        if extra_disks != "":
+            extra_disks = extra_disks.split(",")
+        conf["disk"] = extra_disks
+
     except Exception:
         traceback.print_exc()
         # fan
