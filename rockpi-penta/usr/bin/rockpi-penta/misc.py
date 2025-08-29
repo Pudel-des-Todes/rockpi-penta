@@ -100,18 +100,31 @@ def read_conf():
     return conf
 
 
+
+
+def get_line_value(chip_path, line_offset):
+    with gpiod.request_lines(
+        chip_path,
+        consumer="hat_button",
+        config={line_offset: gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)},
+    ) as request:
+        value = request.get_value(line_offset)
+        if value == gpiod.line.Value.ACTIVE:
+            return 1
+        else:
+            return 0
+
+
 def read_key(pattern, size):
     CHIP_NAME = os.environ['BUTTON_CHIP']
     LINE_NUMBER = os.environ['BUTTON_LINE']
-
+    
     s = ''
-    chip = gpiod.Chip(str(CHIP_NAME))
-    line = chip.get_line(int(LINE_NUMBER))
-    line.request(consumer='hat_button', type=gpiod.LINE_REQ_DIR_OUT)
-    line.set_value(1)
 
     while True:
-        s = s[-size:] + str(line.get_value())
+        value = get_line_value(CHIP_NAME, LINE_NUMBER)
+
+        s = s[-size:] + str(value)
         for t, p in pattern.items():
             if p.match(s):
                 return t
