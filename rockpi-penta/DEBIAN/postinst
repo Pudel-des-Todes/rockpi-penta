@@ -31,11 +31,13 @@ armbian_require_overlay() {
   fi
 }
 
-if [ "$(python3 -c 'import sys; print(f"{sys.version_info.minor >= 11}")')" = "True" ]; then
-  pip3 install adafruit-circuitpython-ssd1306 --break-system-packages
-else
-  pip3 install adafruit-circuitpython-ssd1306
-fi
+
+# create venv and install pip-only only dependency
+python3 -m venv --system-site-packages /usr/bin/rockpi-penta/venv
+source /usr/bin/rockpi-penta/venv/bin/activate
+pip install adafruit-circuitpython-ssd1306
+deactivate 
+
 
 systemctl enable rockpi-penta.service
 
