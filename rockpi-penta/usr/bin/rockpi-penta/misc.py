@@ -20,7 +20,12 @@ cmds = {
     'disk': "df -h | awk '$NF==\"/\"{printf \"Disk: %d/%dGB %s\", $3,$2,$5}'"
 }
 
-lv2dc = OrderedDict({'lv3': 0, 'lv2': 0.25, 'lv1': 0.5, 'lv0': 0.75})
+FAN_DUTY_OFF = 0.0
+FAN_DUTY_ON  = 1.0 
+lv2dc = OrderedDict({'lv3': 1.0, 'lv2':0.75, 'lv1': 0.5, 'lv0': 0.25})
+duty2dc = lambda x: 1.0 - x
+
+
 
 
 def check_output(cmd):
@@ -163,10 +168,18 @@ def get_sleep_time():
 
 
 def fan_temp2dc(t):
+
+    result = FAN_DUTY_OFF
     for lv, dc in lv2dc.items():
         if t >= conf['fan'][lv]:
-            return dc
-    return 0.999
+            result = dc
+            break
+
+    print(f"t = {t:.3f}°C -> {result:.3f}")
+
+    duty = duty2dc(result)
+
+    return duty
 
 
 def fan_switch():

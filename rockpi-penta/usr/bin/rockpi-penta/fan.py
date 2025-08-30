@@ -75,9 +75,9 @@ def read_temp():
 
 def get_dc(cache={}):
     if misc.conf['run'].value == 0:
-        return 0.999
+        return misc.duty2dc(misc.FAN_DUTY_OFF)
 
-    if time.time() - cache.get('time', 0) > 60:
+    if time.time() - cache.get('time', 0) > 10:
         cache['time'] = time.time()
         cache['dc'] = misc.fan_temp2dc(read_temp())
 
@@ -100,7 +100,9 @@ def running():
     else:
         pin = Gpio(0.025)
     while True:
-        change_dc(get_dc())
+
+        dc = get_dc()
+        change_dc(dc)
         time.sleep(1)
 
 
