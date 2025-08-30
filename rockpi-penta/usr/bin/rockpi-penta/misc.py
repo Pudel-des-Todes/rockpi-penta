@@ -5,6 +5,7 @@ import time
 import subprocess
 import multiprocessing as mp
 import traceback
+from datetime import timedelta
 
 import gpiod
 from configparser import ConfigParser
@@ -105,48 +106,68 @@ def read_conf():
     return conf
 
 
+def read_key_events(chip_device, chip_line):
 
+    time_long_press   = float(conf['time']['press'])
+    time_double_click = float(conf['time']['twice'])
 
-def get_line_value(chip_path, line_offset):
+    event_single = "click"
+    event_double = "twice"
+    event_long = "press"
+
+    setting = gpiod.LineSettings(
+        edge_detection=gpiod.line.Edge.BOTH,
+        debounce_period=timedelta(milliseconds=10)
+    )
+
     with gpiod.request_lines(
-        chip_path,
+        chip_device,
         consumer="hat_button",
-        config={line_offset: gpiod.LineSettings(direction=gpiod.line.Direction.INPUT)},
+        config={chip_line: setting},
     ) as request:
-        value = request.get_value(line_offset)
-        if value == gpiod.line.Value.ACTIVE:
-            return 1
-        else:
-            return 0
 
+        click_count = 0
+        wait = None
+        ignore_release = False
 
-def read_key(pattern, size):
-    CHIP_NAME = os.environ['BUTTON_CHIP']
-    LINE_NUMBER = os.environ['BUTTON_LINE']
-    
-    s = ''
+        while True:
+            if not request.wait_edge_events(wait):
+                if click_count == 0:        
+                    ignore_release = True
+                    yield event_long
+                if click_count == 1:
+                    yield event_single
+                click_count = 0
+                wait = None
+                continue
 
-    while True:
-        value = get_line_value(CHIP_NAME, LINE_NUMBER)
+            for event in request.read_edge_events():
+                edge_event = event.event_type
 
-        s = s[-size:] + str(value)
-        for t, p in pattern.items():
-            if p.match(s):
-                return t
-        time.sleep(0.1)
+                if edge_event == gpiod.EdgeEvent.Type.FALLING_EDGE: # pressed
+                    if click_count == 0: # arm longpress detection
+                        wait = time_long_press 
 
+                elif edge_event == gpiod.EdgeEvent.Type.RISING_EDGE: # released
+                    if ignore_release:
+                        ignore_release = False
+                        continue
+                    click_count += 1
+                    if click_count == 1:
+                        wait = time_double_click 
+                    if click_count == 2 and wait == time_double_click:
+                        click_count = 0
+                        wait = None
+                        yield event_double
+                     
 
 def watch_key(q=None):
-    size = int(conf['time']['press'] * 10)
-    wait = int(conf['time']['twice'] * 10)
-    pattern = {
-        'click': re.compile(r'1+0+1{%d,}' % wait),
-        'twice': re.compile(r'1+0+1+0+1{3,}'),
-        'press': re.compile(r'1+0{%d,}' % size),
-    }
 
-    while True:
-        q.put(read_key(pattern, size))
+    chip_device = os.environ['BUTTON_CHIP']
+    chip_line = os.environ['BUTTON_LINE']
+
+    for key_event in read_key_events(chip_device, chip_line):
+        q.put(key_event)
 
 
 def get_disk_info(cache={}):
