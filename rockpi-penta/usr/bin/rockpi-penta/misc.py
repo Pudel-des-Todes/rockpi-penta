@@ -175,7 +175,7 @@ def fan_temp2dc(t):
             result = dc
             break
 
-    print(f"t = {t:.3f}°C -> {result:.3f}")
+    #print(f"t = {t:.3f}°C -> {result:.3f}")
 
     duty = duty2dc(result)
 
