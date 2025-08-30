@@ -15,10 +15,10 @@ import threading
 import misc
 
 font = {
-    '10': ImageFont.truetype('fonts/DejaVuSansMono-Bold.ttf', 10),
-    '11': ImageFont.truetype('fonts/DejaVuSansMono-Bold.ttf', 11),
-    '12': ImageFont.truetype('fonts/DejaVuSansMono-Bold.ttf', 12),
-    '14': ImageFont.truetype('fonts/DejaVuSansMono-Bold.ttf', 14),
+    '10': ImageFont.truetype('fonts/DejaVuSansMono.ttf', 10),
+    '11': ImageFont.truetype('fonts/DejaVuSansMono.ttf', 11),
+    '12': ImageFont.truetype('fonts/DejaVuSansMono.ttf', 12),
+    '14': ImageFont.truetype('fonts/DejaVuSansMono.ttf', 14),
 }
 
 
