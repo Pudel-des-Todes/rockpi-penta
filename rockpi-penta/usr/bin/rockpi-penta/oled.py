@@ -106,30 +106,53 @@ def gen_pages(idx):
 
 
 idx = -1
+is_blank = False
 
-def slider():
-    global idx
-    idx += 1
-    idx %= 3
+def blank():
+    global idx, is_blank
+
+    if not is_blank:
+        disp_show()
+        
+    idx = -1
+    is_blank = True
+
+def refresh(next_page = False):
+
+
+    global idx, is_blank
+
+    if next_page:
+        idx += 1
+        idx %= 3
+
     for item in gen_pages(idx):
         draw.text(**item)
     disp_show()
 
-def refresh():
-    for item in gen_pages(idx):
-        draw.text(**item)
-    disp_show()
+    is_blank = False
 
 def auto_slider(slide_event):
 
+    last_event = time.monotonic()
+    sleep_time = misc.get_sleep_time()
+    slide_time = misc.get_slide_time()
+
     slide = True
     while True:
-        if misc.conf['slider']['auto'] or slide:
-            slider()
+        now = time.monotonic()
+
+        if slide:
+            last_event = now
+
+        if sleep_time > 0 and now - last_event > sleep_time:
+            blank()
+        elif misc.get_slide_active() or slide:
+            refresh(True)
         else:
             refresh()
         slide_event.clear()
-        slide_event.wait(misc.get_sleep_time())
+        slide_event.wait(slide_time)
         slide = slide_event.is_set()
 
 if __name__ == '__main__':

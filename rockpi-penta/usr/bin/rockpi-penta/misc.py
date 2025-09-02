@@ -73,10 +73,12 @@ def read_conf():
         conf['time']['twice'] = cfg.getfloat('time', 'twice')
         conf['time']['press'] = cfg.getfloat('time', 'press')
         # other
-        conf['slider']['auto'] = cfg.getboolean('slider', 'auto')
-        conf['slider']['time'] = cfg.getfloat('slider', 'time')
+
         conf['oled']['rotate'] = cfg.getboolean('oled', 'rotate')
         conf['oled']['f-temp'] = cfg.getboolean('oled', 'f-temp')
+        conf['oled']['auto_slide'] = cfg.getboolean('oled', 'auto_slide')
+        conf['oled']['auto_slide_time'] = cfg.getfloat('oled', 'auto_slide_time')
+        conf['oled']['sleep'] = cfg.getfloat('oled', 'sleep')
 
         extra_disks = cfg.get('disk', 'extra', fallback="")
         if extra_disks != "":
@@ -98,10 +100,11 @@ def read_conf():
         conf['time']['twice'] = 0.7  # second
         conf['time']['press'] = 1.8
         # other
-        conf['slider']['auto'] = True
-        conf['slider']['time'] = 10  # second
         conf['oled']['rotate'] = False
         conf['oled']['f-temp'] = False
+        conf['oled']['auto_slide'] = True
+        conf['oled']['auto_slide_time'] = 10  # second
+        conf['oled']['sleep'] = 0  # second
 
     return conf
 
@@ -183,10 +186,14 @@ def get_disk_info(cache={}):
 
     return cache['info']
 
+def get_slide_active():
+    return conf['oled']['auto_slide']
+
+def get_slide_time():
+    return conf['oled']['auto_slide_time']
 
 def get_sleep_time():
-    return conf['slider']['time']
-
+    return conf['oled']['sleep']
 
 def fan_temp2dc(t):
 
