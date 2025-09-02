@@ -1,3 +1,11 @@
+# Preface
+
+This is a fork of original PENTA HAT with many improvements including:
+* comaptible with gpiod V2 (debina trixie)
+* fixed glithcy and resource-hunngry button handling
+* fixed displaying of extra disks 
+* display sleep mode to mitigate OLED burn-in
+
 # ROCK Pi Penta SATA
 
 Top Board control program
