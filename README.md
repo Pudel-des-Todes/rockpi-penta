@@ -1,8 +1,8 @@
 # Preface
 
-This is a fork of original PENTA HAT with many improvements including:
+This is a fork of the original PENTA HAT with many improvements including:
 * comaptible with gpiod V2 (debina trixie)
-* fixed glithcy and resource-hunngry button handling
+* fixed glithcy and resource-hungry button handling
 * fixed displaying of extra disks 
 * display sleep mode to mitigate OLED burn-in
 
